@@ -1,0 +1,150 @@
+<div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar sidebar-gradient-1">
+        <button (click)="showViewTask('user', null, true)">View Tasks</button>
+        <button (click)="showViewTeam()">View Teams</button>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        <!-- Create Task Form -->
+        <div *ngIf="isCreateTaskVisible" class="create-task-form">
+            <h2>Create Task</h2>
+            <form #createTaskForm (ngSubmit)="createTask('user',createTaskForm)">
+                <div class="form-group">
+                    <label for="taskName">Task Name</label>
+                    <input type="text" id="taskName" [(ngModel)]="task.name" name="taskName" required
+                        placeholder="Enter task name" />
+                </div>
+
+                <div class="form-group">
+                    <label for="taskDetail">Task Detail</label>
+                    <textarea id="taskDetail" [(ngModel)]="task.details" name="taskDetail" required
+                        placeholder="Enter task details"></textarea>
+                </div>
+
+                <div class="date-inputs">
+                    <div class="form-group">
+                        <label for="startDate">Start Date</label>
+                        <input type="date" id="startDate" [(ngModel)]="task.startDate" name="startDate" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="endDate">End Date</label>
+                        <input type="date" id="endDate" [(ngModel)]="task.endDate" name="endDate" required />
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" (click)="cancelCreate(createTaskForm)">Cancel</button>
+                    <button type="submit" class="btn-submit">Create Task</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Task List (Card View) -->
+        <div *ngIf="isViewTaskVisible" class="task-list-container">
+            <div class="task-header">
+                <h2 class="task-list-heading">Task List</h2>
+                <button *ngIf="isViewTaskVisible" class="create-task-btn create-task-btn-gradient-1"
+                    (click)="showCreateTask()">+ Create Task</button>
+            </div>
+
+            <div class="task-list">
+                <div *ngFor="let task of tasks" class="task-card" (click)="openTaskDetails(task)">
+                    <h3>{{ task.name }}</h3>
+                    <p>{{ task.details }}</p>
+                    <div class="card-footer">
+                        <span class="date">Due: {{ task.endDate | date }}</span>
+                        <span class="status"
+                            [ngClass]="{ 'pending': task.status === 'Pending', 'completed': task.status === 'Completed' }">
+                            {{ task.status }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div *ngIf="isViewTeamTaskVisible" class="task-list-container">
+            <div class="task-list">
+                <div *ngFor="let task of teamTask" class="task-card" (click)="openTaskDetails(task)">
+                    <h3>{{ task.name }}</h3>
+                    <p>{{ task.details }}</p>
+                    <div class="card-footer">
+                        <span class="date">Due: {{ task.endDate | date }}</span>
+                        <span class="status"
+                            [ngClass]="{ 'pending': task.status === 'Pending', 'completed': task.status === 'Completed' }">
+                            {{ task.status }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Task Details Form -->
+        <div *ngIf="isTaskDetailsVisible" class="create-task-form"> <!-- Reusing create-task-form styles -->
+            <h2>Task Details</h2>
+            <form>
+                <div class="form-group">
+                    <label for="taskName">Task Name</label>
+                    <input type="text" id="taskName" [(ngModel)]="selectedTask.name" name="taskName" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label for="taskDetail">Task Detail</label>
+                    <textarea id="taskDetail" [(ngModel)]="selectedTask.details" name="taskDetail" readonly></textarea>
+                </div>
+
+
+                <div class="date-inputs">
+                    <div class="form-group">
+                        <label for="startDate">Start Date</label>
+                        <input type="date" id="startDate" [(ngModel)]="selectedTask.startDate" name="startDate"
+                            readonly />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="endDate">End Date</label>
+                        <input type="date" id="endDate" [(ngModel)]="selectedTask.endDate" name="endDate" readonly />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <select id="status" [(ngModel)]="selectedTask.status" name="status">
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-submit" (click)="updateTask()">Update Task</button>
+                    <button *ngIf="isViewTaskVisibleTeam" type="button" class="btn-cancel" (click)="deleteTask()">Delete Task</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Response Messages -->
+        <div *ngIf="updateMessage" [ngClass]="messageClass" class="success-message">
+            {{ updateMessage }}
+        </div>
+
+        <div *ngIf="deleteMessage" [ngClass]="messageClass" class="success-message">
+            {{ deleteMessage }}
+        </div>
+
+        <!-- Team List -->
+        <div *ngIf="isViewTeamsVisible" class="team-list">
+            <h2 class="task-list-heading">Team List</h2>
+            <div class="team-grid">
+                <div *ngFor="let team of teams" class="team-card"
+                    (click)="showViewTeamTask('user', team.team.id,false)">
+                    <h3>{{ team.team.name }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

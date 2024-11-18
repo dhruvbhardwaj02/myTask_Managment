@@ -1,0 +1,52 @@
+<div>
+  <div class="container-fluid p-0">
+    <nav class="navbar navbar-expand-lg navbar-light shadow-sm sticky-top">
+      <div class="container">
+        <h1 class="navbar-brand text-white" routerLink="/home" style="cursor: pointer;">
+          myTask Management System
+        </h1>
+
+        <div class="d-flex ml-auto">
+          <!-- Navigation links -->
+          <ng-container *ngIf="isSigninOrSignupRoute">
+            <a class="btn btn-light mx-2 rounded-pill px-4 py-2 hover-shadow" routerLink="/signup"
+              routerLinkActive="active">Register</a>
+            <a class="btn btn-light mx-2 rounded-pill px-4 py-2 hover-shadow" routerLink="/signin"
+              routerLinkActive="active">Login</a>
+          </ng-container>
+
+          <ng-container *ngIf="!isSigninOrSignupRoute">
+            <button class="btn btn-danger mx-2 rounded-pill px-4 py-2 hover-shadow" (click)="logout()">
+              Logout
+            </button>
+          </ng-container>
+        </div>
+      </div>
+    </nav>
+
+    <router-outlet></router-outlet>
+  </div>
+
+  <!-- Logout Confirmation Modal -->
+  <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-3 shadow-lg">
+        <div class="modal-header border-bottom-0">
+          <h5 class="modal-title" id="logoutModalLabel">Logout Confirmation</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-center mb-4">Are you sure you want to logout?</p>
+        </div>
+        <div class="modal-footer border-top-0 justify-content-center">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="cancelLogout()">
+            Cancel
+          </button>
+          <button type="button" class="btn btn-danger" (click)="confirmLogout()">
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

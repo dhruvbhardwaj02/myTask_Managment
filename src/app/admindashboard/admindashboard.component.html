@@ -1,0 +1,277 @@
+<div class="container">
+  <!-- Sidebar for navigation -->
+  <div class="sidebar">
+    <button (click)="showTeams()">Manage Teams</button>
+    <button (click)="showTasks()">Manage Tasks</button>
+  </div>
+
+  <!-- Main Content -->
+  <div class="content">
+    <div *ngIf="isTaskDetailsVisible" class="create-task-form">
+      <h2>Task Details</h2>
+      <form>
+        <!-- Task Name -->
+        <div class="form-group">
+          <label for="taskName">Task Name</label>
+          <input type="text" id="taskName" [(ngModel)]="selectedTask.name" name="taskName" readonly />
+        </div>
+
+        <!-- Task Detail -->
+        <div class="form-group">
+          <label for="taskDetail">Task Detail</label>
+          <textarea id="taskDetail" [(ngModel)]="selectedTask.details" name="taskDetail"></textarea>
+        </div>
+
+        <!-- Team Name Dropdown -->
+        <div class="form-group">
+          <label for="teamName">Team Name</label>
+          <select id="teamName" [(ngModel)]="selectedTask.team" name="teamName" (ngModelChange)="onTeamChange($event)"
+            required>
+            <option *ngFor="let team of teams" [value]="team.team.id">
+              {{ team.team.name }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Assigny Dropdown -->
+        <div class="form-group">
+          <label for="assigny">Assigny</label>
+          <select id="assigny" [(ngModel)]="selectedTask.assign" name="assign" required>
+            <option *ngFor="let member of teamMembersBasedOnTeam" [value]="member.userId">
+              {{ member.userName }} - {{ member.userEmail }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Status Dropdown -->
+        <div class="form-group">
+          <label for="status">Status</label>
+          <select id="status" [(ngModel)]="selectedTask.status" name="status">
+            <option value="Pending">Pending</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button style="margin-bottom: 10px" type="button" class="btn-submit" (click)="updateTask()">
+            Update Task
+          </button>
+          <button type="button" class="btn-cancel" (click)="deleteTask()">
+            Delete Task
+          </button>
+        </div>
+      </form>
+    </div>
+
+
+    <div *ngIf="isTeamTaskVisibleOnClick" class="task-list-container">
+      <div class="task-header">
+        <h2 class="task-list-heading">Task List</h2>
+        <button *ngIf="isCreateTaskVisible" class="create-task-btn create-task-btn-gradient-1"
+          (click)="showCreateTask()">+ Create Task</button>
+      </div>
+
+      <div class="task-list">
+        <div *ngFor="let task of teamTasks" class="task-card" [ngClass]="{
+            'task-pending': task.status === 'Pending',
+            'task-in-progress': task.status === 'In Progress',
+            'task-completed': task.status === 'Completed'
+          }" (click)="openTaskDetailsUpdate(task)">
+          <h3>{{ task.name }}</h3>
+          <p>{{ task.details }}</p>
+          <div class="card-footer">
+            <span class="date">Due: {{ task.endDate | date }}</span>
+            <span class="status">{{ task.status }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div *ngIf="isAddMemberModalVisible">
+      <h3>Add Team Member</h3>
+      <form #addTeamMemberForm (ngSubmit)="addTeamMember(addTeamMemberForm)">
+        <label for="userName">Select User</label>
+        <select id="userName" [(ngModel)]="selectedUserId" name="userName" required>
+          <option *ngFor="let user of users" [value]="user.userId">{{ user.userName }}</option>
+        </select>
+        <button style="margin-bottom: 10px;" type="submit">Add Member</button>
+        <button type="button" (click)="closeAddMemberModal()">Cancel</button>
+      </form>
+    </div>
+
+
+    <div class="member-modal" *ngIf="isViewMembersModalVisible">
+      <div class="modal-content">
+        <h3>Team Members</h3>
+        <div class="member-list">
+          <div class="member-item" *ngFor="let member of teamMembers">
+            <span class="avatar">{{ member.userName.charAt(0) }}</span>
+            <div class="member-details">
+              {{ member.userName }}
+              <span class="email">{{ member.userEmail }}</span>
+            </div>
+          </div>
+        </div>
+        <button class="close-btn" (click)="closeViewMembersModal()">Close</button>
+      </div>
+    </div>
+
+
+    <!-- Teams Section -->
+    <div *ngIf="isTeamsVisible">
+      <div class="header">
+        <h2>Teams</h2>
+        <button class="create-btn" (click)="showCreateTeam()">Create Team</button>
+      </div>
+
+      <!-- Team List -->
+      <div *ngIf="isTeamListVisible">
+        <table>
+          <thead>
+            <tr>
+              <th>Team Name</th>
+              <th>Team Size</th>
+              <th>Pending Tasks</th>
+              <th>Completed Tasks</th>
+              <th>Total Tasks</th>
+              <th>Add member</th>
+              <th>View member</th>
+              <th>Delete team</th>
+              <th>Update team</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let team of teams">
+              <td (click)="fetchTeamTasks(team.team.id)"
+                style="cursor: pointer; color: blue; text-decoration: underline;">
+                {{ team.team.name }}
+              </td>
+              <td>
+                <div *ngIf="editableTeamId === team.team.id; else displaySize">
+                  <input type="number" [(ngModel)]="team.team.size" style="width: 60px;" />
+                </div>
+                <ng-template #displaySize>
+                  {{ team.team.size }}
+                </ng-template>
+              </td>
+              <td>{{ team.pendingTask }}</td>
+              <td>{{ team.completedTask }}</td>
+              <td>{{ team.totalTask }}</td>
+              <td>
+                <button (click)="openAddMemberModal(team.team.id)">Add Member</button>
+              </td>
+              <td>
+                <button (click)="viewTeamMembers(team.team.id)">View Members</button>
+              </td>
+              <td>
+                <button (click)="deleteTeam(team.team.id)">Delete</button>
+              </td>
+              <td>
+                <button *ngIf="editableTeamId !== team.team.id; else saveUpdate" (click)="enableEditing(team.team.id)">
+                  Update
+                </button>
+                <ng-template #saveUpdate>
+                  <button (click)="updateTeam(team.team)">Save</button>
+                </ng-template>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Create Team Form -->
+      <div *ngIf="isCreateTeamVisible">
+        <h3>Create Team</h3>
+        <form (ngSubmit)="createTeam(createTeamForm)" #createTeamForm>
+          <label for="teamName">Team Name</label>
+          <input type="text" id="teamName" [(ngModel)]="team.name" name="teamName" required />
+
+          <label for="teamSize">Team Size</label>
+          <input type="number" id="teamSize" [(ngModel)]="team.size" name="teamSize" required />
+
+          <label for="teamDetail">Team Detail</label>
+          <textarea id="teamDetail" [(ngModel)]="team.details" name="teamDetail" required></textarea>
+
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Task List -->
+
+    <!-- Tasks Section -->
+    <div *ngIf="isTasksVisible">
+      <div class="header">
+        <h2>Unassign Task</h2>
+        <button class="create-btn" (click)="showCreateTask()">Create Task</button>
+      </div>
+      <div *ngIf="isTaskListVisible">
+        <table>
+          <thead>
+            <tr>
+              <th>Task Name</th>
+              <th>Assigny</th>
+              <th>Team Name</th>
+              <th>Start Date</th>
+              <th>End Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let task of tasks" (click)="openTaskDetails(task)">
+              <td>{{ task.name }}</td>
+              <td>{{ task.assign }}</td>
+              <td>{{ task.team }}</td>
+              <td>{{ task.startDate }}</td>
+              <td>{{ task.endDate }}</td>
+              <td>{{ task.status }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Task Details Form -->
+
+
+      <!-- Create Task Form -->
+      <div *ngIf="isCreateTaskVisible">
+        <h3>Create Task</h3>
+        <form (ngSubmit)="createTask('admin')">
+          <label for="taskName">Task Name</label>
+          <input type="text" id="taskName" [(ngModel)]="newTask.name" name="taskName" required />
+
+          <label for="taskDetails">Task Details</label>
+          <textarea id="taskDetails" [(ngModel)]="newTask.details" name="taskDetails" required></textarea>
+
+          <label for="teamName">Team Name</label>
+          <select id="teamName" [(ngModel)]="newTask.team" [(ngModel)]="selectedTeamIdOnDropdown" name="teamName"
+            (change)="onTeamChange(newTask.team)" required>
+            <option *ngFor="let team of teams" [value]="team.team.id">
+              {{ team.team.name }}
+            </option>
+          </select>
+
+          <label for="assigny">Assigny</label>
+          <select id="assigny" [(ngModel)]="newTask.assign" name="aasign" required>
+            <option *ngFor="let team of teamMembersBasedOnTeam" [value]="team.userId">
+              {{ team.userName }}-{{team.userEmail}}
+            </option>
+          </select>
+
+
+
+          <label for="startDate">Start Date</label>
+          <input type="date" id="startDate" [(ngModel)]="newTask.startDate" name="startDate" required />
+
+          <label for="endDate">End Date</label>
+          <input type="date" id="endDate" [(ngModel)]="newTask.endDate" name="endDate" required />
+
+          <button (click)="showTasks()" type="submit">Submit</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
